@@ -1,0 +1,71 @@
+{
+  "name": "joy-cleaner",
+  "version": "0.2.0",
+  "description": "JoyCleaner — desktop app with modular architecture",
+  "main": "dist/apps/desktop/src/main/main.js",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build:ts": "tsc && node scripts/copy-cdisk-config.js",
+    "dev": "npm run build:ts && electron .",
+    "start": "electron .",
+    "build": "npm run build:ts && electron-builder",
+    "build:win": "npm run build:ts && electron-builder --win portable"
+  },
+  "keywords": [
+    "cleaner",
+    "electron",
+    "windows"
+  ],
+  "author": "local-dev",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  },
+  "build": {
+    "appId": "com.local.joycleaner",
+    "productName": "JoyCleaner",
+    "asar": true,
+    "compression": "maximum",
+    "electronLanguages": ["en-US", "zh-CN"],
+    "afterPack": "./scripts/electron-after-pack.cjs",
+    "files": [
+      "dist/**/*",
+      "ui/**/*",
+      "package.json",
+      "!**/*.map",
+      "!**/*.ts",
+      "!**/*.tsx",
+      "!**/__tests__/**",
+      "!**/*.spec.*",
+      "!**/*.test.*",
+      "!**/test/**",
+      "!**/tests/**",
+      "!**/docs/**",
+      "!README.md",
+      "!CHANGELOG.md",
+      "!CONTRIBUTING.md",
+      "!CODE_OF_CONDUCT.md",
+      "!SECURITY.md",
+      "!NOTICE",
+      "!LICENSE"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "signAndEditExecutable": false,
+      "icon": "build/icon.ico",
+      "target": [
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

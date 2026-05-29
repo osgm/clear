@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>清理大师</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-icon" aria-hidden="true"></span>
+          <span>清理大师</span>
+        </div>
+        <button type="button" class="nav-item active" data-panel="panel-cdisk">
+          <span class="nav-lead-icon" aria-hidden="true"></span>
+          <span class="nav-text">磁盘清理</span>
+          <span class="nav-busy-dot" hidden aria-hidden="true"></span>
+        </button>
+        <button type="button" class="nav-item" data-panel="panel-analyze">
+          <span class="nav-lead-icon" aria-hidden="true"></span>
+          <span class="nav-text">磁盘分析</span>
+          <span class="nav-busy-dot" hidden aria-hidden="true"></span>
+        </button>
+        <button type="button" class="nav-item" data-panel="panel-privacy">
+          <span class="nav-lead-icon" aria-hidden="true"></span>
+          <span class="nav-text">隐私清理</span>
+          <span class="nav-busy-dot" hidden aria-hidden="true"></span>
+        </button>
+        <div id="sidebarTaskDock" class="sidebar-task-dock" hidden>
+          <p class="sidebar-task-dock-title">后台任务</p>
+          <ul id="sidebarTaskList" class="sidebar-task-list"></ul>
+        </div>
+      </aside>
+
+      <main class="content">
+        <section id="panel-cdisk" class="panel active">
+          <div class="hero hero--with-lead">
+            <div class="hero-icon-slot" aria-hidden="true"></div>
+            <div class="hero-body">
+              <h1>磁盘清理</h1>
+              <p>Windows 可清理项（更新缓存、日志、转储、Prefetch、缩略图、回收站等）、常用软件缓存（Chrome/Edge/Firefox/IE、微信/QQ、剪映、搜狗、腾讯会议、iTunes 等）及微信/QQ 专清目录。</p>
+              <div class="hero-tags">
+                <span class="hero-tag">实时结果</span>
+                <span class="hero-tag">可中断扫描</span>
+                <span class="hero-tag">安全删除</span>
+              </div>
+            </div>
+          </div>
+          <div class="card cdisk-scan-card">
+            <div class="row cdisk-drive-row">
+              <span class="row-label">扫描目录</span>
+              <div id="driveRadioGroup" class="cdisk-drive-group" role="radiogroup" aria-label="选择要扫描的磁盘"></div>
+            </div>
+            <details class="cdisk-advanced">
+              <summary>高级选项</summary>
+              <div class="row">
+                <label>大文件阈值(MB)</label>
+                <input id="bigFileMB" type="number" min="1" value="200" />
+                <label>未修改(天)</label>
+                <input id="oldDays" type="number" min="1" value="180" />
+              </div>
+              <div class="row">
+                <label>扩展名</label>
+                <input id="exts" type="text" value=".tmp,.temp,.log,.cache,.bak,.old,.dmp,.chk,.download,.crdownload,.partial,.part,.aria2,.opdownload,.etl" />
+                <label>忽略关键字</label>
+                <input id="ignoreDirs" type="text" value="node_modules,dist,.git" />
+              </div>
+            </details>
+            <input id="rootPath" type="hidden" value="C:\" />
+            <div class="row">
+              <button id="scanBtn" type="button" class="btn-primary">开始扫描</button>
+              <button id="pauseScanBtn" type="button" class="btn-ghost">暂停任务</button>
+              <button id="resumeScanBtn" type="button" class="btn-ghost">继续任务</button>
+              <button id="cancelScanBtn" type="button" class="btn-ghost">停止任务</button>
+              <span id="status" class="status-pill">等待开始</span>
+            </div>
+            <div class="row progress-row">
+              <progress id="scanProgress" max="100" value="0"></progress>
+              <span id="progressText">0%</span>
+            </div>
+          </div>
+
+          <section class="card cdisk-results-card">
+            <div class="row summary cdisk-toolbar">
+              <label class="cleanup-mode-label" for="cleanupMode">删除方式</label>
+              <select id="cleanupMode" class="cleanup-mode-select" title="隐私清理与本页磁盘分析删除同样使用该选项">
+                <option value="recycle">移入回收站（可恢复）</option>
+                <option value="shred">安全删除（覆写，不可恢复）</option>
+              </select>
+              <button id="exportReportBtn" type="button" class="btn-ghost">导出报告</button>
+              <button id="selectAllBtn" type="button" class="btn-ghost">全选可清理项</button>
+              <button id="cleanupBtn" type="button" class="btn-danger">删除所选</button>
+              <button id="stopCleanupBtn" type="button" class="btn-ghost">停止删除</button>
+            </div>
+            <div class="summary-line">
+              <span id="summaryText">暂无结果</span>
+            </div>
+            <div id="cdiskResults" class="cdisk-results"></div>
+          </section>
+        </section>
+
+        <section id="panel-analyze" class="panel">
+          <div class="hero hero--with-lead">
+            <div class="hero-icon-slot" aria-hidden="true"></div>
+            <div class="hero-body">
+              <h1>磁盘分析</h1>
+              <p>独立分析目录下的重复文件、大文件、空文件与空文件夹。扫描结果可直接勾选删除。</p>
+            </div>
+          </div>
+          <div class="card cdisk-analyze-card">
+            <div class="row cdisk-drive-row">
+              <span class="row-label">扫描目录（可多选）</span>
+              <div id="analyzeDriveCheckboxGroup" class="cdisk-drive-group" role="group" aria-label="选择要分析的磁盘"></div>
+            </div>
+            <input id="analyzeRootPath" type="hidden" value="C:\" />
+            <div class="row">
+              <label>忽略关键字</label>
+              <input id="analyzeIgnoreDirs" type="text" value="node_modules,dist,.git" />
+            </div>
+            <div class="row analyze-tool-row">
+              <span class="row-label">工具（可多选）</span>
+              <label class="inline-check"><input type="checkbox" name="analyzeTool" value="duplicates" checked /> 重复文件（SHA256）</label>
+              <label class="inline-check"><input type="checkbox" name="analyzeTool" value="bigfiles" /> 大文件 TOP</label>
+              <label class="inline-check"><input type="checkbox" name="analyzeTool" value="empty-files" /> 空文件</label>
+              <label class="inline-check"><input type="checkbox" name="analyzeTool" value="empty-dirs" /> 空文件夹</label>
+            </div>
+            <div class="row" id="analyzeOptDup">
+              <label>重复·最小字节</label>
+              <input id="dupMinBytes" type="number" min="1" value="1024" />
+              <label>最多哈希文件数</label>
+              <input id="dupMaxHash" type="number" min="100" value="10240" />
+            </div>
+            <div class="row" id="analyzeOptBig">
+              <label>最小(MB)</label>
+              <input id="bigMinMB" type="number" min="1" value="100" />
+              <label>TOP N</label>
+              <input id="bigTopN" type="number" min="5" value="50" />
+              <label class="inline-check">
+                <input id="bigIncludeRestorePoints" type="checkbox" checked />
+                包含系统还原点相关文件（Windows）
+              </label>
+            </div>
+            <div class="row">
+              <button id="analyzeScanBtn" type="button" class="btn-primary">开始分析</button>
+              <button id="analyzePauseBtn" type="button" class="btn-ghost">暂停任务</button>
+              <button id="analyzeResumeBtn" type="button" class="btn-ghost">继续任务</button>
+              <button id="analyzeStopBtn" type="button" class="btn-ghost">停止任务</button>
+              <span id="analyzeStatus" class="status-pill status-pill-muted">就绪</span>
+            </div>
+            <div class="row progress-row">
+              <progress id="analyzeProgress" max="100" value="0"></progress>
+              <span id="analyzeProgressText">0%</span>
+            </div>
+            <div class="table-wrap analyze-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>选择</th>
+                    <th>类别/组别</th>
+                    <th>路径</th>
+                    <th>大小(MB)</th>
+                    <th>说明</th>
+                  </tr>
+                </thead>
+                <tbody id="analyzeBody"></tbody>
+              </table>
+            </div>
+            <div class="row">
+              <button id="analyzeSelectAllBtn" type="button" class="btn-ghost">全选当前结果</button>
+              <button id="analyzeExpandAllBtn" type="button" class="btn-ghost">展开全部组</button>
+              <button id="analyzeCollapseAllBtn" type="button" class="btn-ghost">折叠全部组</button>
+              <button id="analyzeCleanupBtn" type="button" class="btn-danger">删除所选</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="panel-privacy" class="panel">
+          <div class="privacy-page">
+            <header class="privacy-header">
+              <div class="privacy-header-main">
+                <div class="privacy-shield" aria-hidden="true">
+                  <svg viewBox="0 0 64 64" width="56" height="56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="privacyShieldGrad" x1="10" y1="6" x2="54" y2="58" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#d4f0e8" />
+                        <stop offset="1" stop-color="#e8f4fc" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M32 6L12 15v18c0 11.5 8.5 21.5 20 26 11.5-4.5 20-14.5 20-26V15L32 6z"
+                      fill="url(#privacyShieldGrad)"
+                      stroke="#7ecfc4"
+                      stroke-width="2"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M22 34l7 8 15-17"
+                      stroke="#4a9690"
+                      stroke-width="3.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      fill="none"
+                    />
+                  </svg>
+                </div>
+                <div class="privacy-header-text">
+                  <p class="privacy-headline">
+                    存在 <span id="privacyTotalTraces" class="privacy-num">0</span> 条隐私痕迹，已选
+                    <span id="privacySelectedTraces" class="privacy-num">0</span> 条
+                  </p>
+                  <p class="privacy-tagline">快速清理电脑的使用痕迹，贴心守护你的隐私安全</p>
+                  <button id="privacyScanBtn" type="button" class="privacy-scan-link">扫描 / 更新痕迹</button>
+                  <button id="privacyPauseBtn" type="button" class="privacy-scan-link">暂停任务</button>
+                  <button id="privacyResumeBtn" type="button" class="privacy-scan-link">继续任务</button>
+                  <button id="privacyStopBtn" type="button" class="privacy-scan-link">停止任务</button>
+                </div>
+              </div>
+              <button id="privacyCleanupBtn" type="button" class="btn-danger privacy-cleanup-btn">一键清理</button>
+            </header>
+
+            <div id="privacyEmpty" class="privacy-empty">
+              <div class="privacy-empty-icon" aria-hidden="true"></div>
+              <p>点击下方按钮扫描本机系统与软件隐私痕迹</p>
+            </div>
+
+            <div id="privacyResults" class="privacy-results" hidden></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
